@@ -1,0 +1,135 @@
+using System;
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(GrassHabitat))]
+public sealed class SlimeManaProducer : MonoBehaviour
+{
+    [Header("Referências")]
+    [SerializeField] private ManaSystem manaSystem;
+
+    [Header("Produção por raridade")]
+    [SerializeField, Min(1)] private long commonManaPerSecond = 2;
+    [SerializeField, Min(1)] private long rareManaPerSecond = 5;
+    [SerializeField, Min(1)] private long legendaryManaPerSecond = 10;
+
+    private GrassHabitat grassHabitat;
+    private Coroutine productionCoroutine;
+    private WaitForSeconds waitForProduction;
+
+    public long TotalManaPerSecond =>
+        CalculateTotalManaPerSecond();
+
+    public event Action<long> ProductionChanged;
+
+    private void Awake()
+    {
+        grassHabitat = GetComponent<GrassHabitat>();
+        waitForProduction = new WaitForSeconds(1f);
+
+        if (manaSystem == null)
+        {
+            Debug.LogError(
+                "ManaSystem não foi configurado no produtor de mana.",
+                this
+            );
+        }
+    }
+
+    private void OnEnable()
+    {
+        grassHabitat.SlimePurchased += HandleSlimePurchased;
+
+        if (grassHabitat.HasSlime)
+        {
+            StartProduction();
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (grassHabitat != null)
+        {
+            grassHabitat.SlimePurchased -= HandleSlimePurchased;
+        }
+
+        StopProduction();
+    }
+
+    private void HandleSlimePurchased(SlimeRarity purchasedRarity)
+    {
+        StartProduction();
+        NotifyProductionChanged();
+    }
+
+    private void NotifyProductionChanged()
+    {
+        ProductionChanged?.Invoke(TotalManaPerSecond);
+    }
+
+    private void StartProduction()
+    {
+        if (productionCoroutine != null || manaSystem == null)
+        {
+            return;
+        }
+
+        productionCoroutine = StartCoroutine(ProduceMana());
+    }
+
+    private void StopProduction()
+    {
+        if (productionCoroutine == null)
+        {
+            return;
+        }
+
+        StopCoroutine(productionCoroutine);
+        productionCoroutine = null;
+    }
+
+    private IEnumerator ProduceMana()
+    {
+        while (true)
+        {
+            yield return waitForProduction;
+
+            long totalMana = TotalManaPerSecond;
+
+            if (totalMana > 0)
+            {
+                manaSystem.AddMana(totalMana);
+            }
+        }
+    }
+
+    private long CalculateTotalManaPerSecond()
+    {
+        long totalMana = 0;
+
+        foreach (SlimeRarity rarity in grassHabitat.Slimes)
+        {
+            totalMana += GetManaPerSecond(rarity);
+        }
+
+        return totalMana;
+    }
+
+    private long GetManaPerSecond(SlimeRarity rarity)
+    {
+        switch (rarity)
+        {
+            case SlimeRarity.Common:
+                return commonManaPerSecond;
+
+            case SlimeRarity.Rare:
+                return rareManaPerSecond;
+
+            case SlimeRarity.Legendary:
+                return legendaryManaPerSecond;
+
+            default:
+                return 0;
+        }
+    }
+}

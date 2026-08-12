@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -16,32 +17,44 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
     [Header("Mana")]
     [SerializeField] private ManaSystem manaSystem;
     [SerializeField] private long restorationCost = 150;
-    [SerializeField] private long firstSlimeCost = 100;
+    [SerializeField, Min(1)] private long firstSlimeCost = 100;
 
     [Header("Habitat")]
+    [SerializeField, Min(1)] private int maxSlimeCapacity = 4;
     [SerializeField] private GameObject ruinedVisual;
     [SerializeField] private GameObject restoredVisual;
     [SerializeField] private TMP_Text interactionPromptText;
 
     [Header("Slimes")]
-    [SerializeField] private GameObject commonSlimeVisual;
-    [SerializeField] private GameObject rareSlimeVisual;
-    [SerializeField] private GameObject legendarySlimeVisual;
+    [SerializeField] private SlimeVisualSlot[] slimeVisualSlots;
 
     private HabitatState habitatState = HabitatState.Ruined;
-    private SlimeRarity currentSlimeRarity;
+    private readonly List<SlimeRarity> slimes = new List<SlimeRarity>();
 
     public bool IsRestored =>
         habitatState != HabitatState.Ruined;
 
     public bool HasSlime =>
-        habitatState == HabitatState.Occupied;
+        slimes.Count > 0;
+
+    public int SlimeCount => slimes.Count;
+    public int MaxSlimeCapacity => maxSlimeCapacity;
+    public bool HasAvailableSlimeSlot =>
+        IsRestored && SlimeCount < MaxSlimeCapacity;
+
+    public long NextSlimeCost => CalculateSlimeCost(SlimeCount);
+
+    public IReadOnlyList<SlimeRarity> Slimes => slimes;
 
     public event Action Restored;
     public event Action<SlimeRarity> SlimePurchased;
 
     private void Awake()
     {
+        maxSlimeCapacity = Mathf.Max(1, maxSlimeCapacity);
+        firstSlimeCost = Math.Max(1L, firstSlimeCost);
+        slimes.Clear();
+
         if (manaSystem == null)
         {
             Debug.LogError(
@@ -68,11 +81,11 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
                 break;
 
             case HabitatState.RestoredEmpty:
-                TryBuyFirstSlime();
+                TryBuySlime();
                 break;
 
             case HabitatState.Occupied:
-                // Futuramente abrirá o painel do habitat.
+                TryBuySlime();
                 break;
         }
     }
@@ -102,35 +115,63 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
         return true;
     }
 
-    private bool TryBuyFirstSlime()
+    private bool TryBuySlime()
     {
         if (manaSystem == null)
         {
             return false;
         }
 
-        if (!manaSystem.TrySpendMana(firstSlimeCost))
+        if (!HasAvailableSlimeSlot)
+        {
+            Debug.Log("O habitat já está com a capacidade máxima.", this);
+            return false;
+        }
+
+        long slimeCost = NextSlimeCost;
+
+        if (!manaSystem.TrySpendMana(slimeCost))
         {
             Debug.Log(
-                $"São necessárias {firstSlimeCost} manas para comprar o slime.",
+                $"São necessárias {slimeCost} manas para comprar o próximo slime.",
                 this
             );
 
             return false;
         }
 
-        currentSlimeRarity = RollSlimeRarity();
+        SlimeRarity purchasedSlimeRarity = RollSlimeRarity();
+        slimes.Add(purchasedSlimeRarity);
         habitatState = HabitatState.Occupied;
 
         UpdatePresentation();
-        SlimePurchased?.Invoke(currentSlimeRarity);
+        SlimePurchased?.Invoke(purchasedSlimeRarity);
 
         Debug.Log(
-            $"Slime obtido: {GetRarityLabel(currentSlimeRarity)}!",
+            $"Slime obtido: {GetRarityLabel(purchasedSlimeRarity)}! " +
+            $"Custo: {slimeCost}. " +
+            $"Capacidade: {SlimeCount}/{MaxSlimeCapacity}.",
             this
         );
 
         return true;
+    }
+
+    private long CalculateSlimeCost(int ownedSlimeCount)
+    {
+        long cost = firstSlimeCost;
+
+        for (int i = 0; i < ownedSlimeCount; i++)
+        {
+            if (cost > long.MaxValue / 2)
+            {
+                return long.MaxValue;
+            }
+
+            cost *= 2;
+        }
+
+        return cost;
     }
 
     private static SlimeRarity RollSlimeRarity()
@@ -153,7 +194,6 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
     private void UpdatePresentation()
     {
         bool isRestored = habitatState != HabitatState.Ruined;
-        bool isOccupied = habitatState == HabitatState.Occupied;
 
         if (ruinedVisual != null)
         {
@@ -165,33 +205,36 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
             restoredVisual.SetActive(isRestored);
         }
 
-        if (commonSlimeVisual != null)
-        {
-            commonSlimeVisual.SetActive(
-                isOccupied &&
-                currentSlimeRarity == SlimeRarity.Common
-            );
-        }
-
-        if (rareSlimeVisual != null)
-        {
-            rareSlimeVisual.SetActive(
-                isOccupied &&
-                currentSlimeRarity == SlimeRarity.Rare
-            );
-        }
-
-        if (legendarySlimeVisual != null)
-        {
-            legendarySlimeVisual.SetActive(
-                isOccupied &&
-                currentSlimeRarity == SlimeRarity.Legendary
-            );
-        }
-
+        UpdateSlimeVisuals();
         UpdatePrompt();
     }
 
+    private void UpdateSlimeVisuals()
+    {
+        if (slimeVisualSlots == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < slimeVisualSlots.Length; i++)
+        {
+            SlimeVisualSlot visualSlot = slimeVisualSlots[i];
+
+            if (visualSlot == null)
+            {
+                continue;
+            }
+
+            if (i < slimes.Count)
+            {
+                visualSlot.Show(slimes[i]);
+            }
+            else
+            {
+                visualSlot.Hide();
+            }
+        }
+    }
     private void UpdatePrompt()
     {
         if (interactionPromptText == null)
@@ -207,15 +250,27 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
                 break;
 
             case HabitatState.RestoredEmpty:
-                interactionPromptText.text =
-                    $"COMPRAR SLIME\n{firstSlimeCost:N0} MANA";
-                break;
-
             case HabitatState.Occupied:
-                interactionPromptText.text =
-                    $"SLIME\n{GetRarityLabel(currentSlimeRarity)}";
+                if (HasAvailableSlimeSlot)
+                {
+                    interactionPromptText.text =
+                        $"COMPRAR SLIME\n{NextSlimeCost:N0} MANA\n" +
+                        $"SLIMES {SlimeCount}/{MaxSlimeCapacity}";
+                }
+                else
+                {
+                    interactionPromptText.text =
+                        $"HABITAT LOTADO\nSLIMES {SlimeCount}/{MaxSlimeCapacity}";
+                }
+
                 break;
         }
+    }
+
+    private void OnValidate()
+    {
+        maxSlimeCapacity = Mathf.Max(1, maxSlimeCapacity);
+        firstSlimeCost = Math.Max(1L, firstSlimeCost);
     }
 
     private static string GetRarityLabel(SlimeRarity rarity)
