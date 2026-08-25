@@ -20,7 +20,9 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
     [SerializeField, Min(1)] private long firstSlimeCost = 100;
 
     [Header("Habitat")]
-    [SerializeField, Min(1)] private int maxSlimeCapacity = 4;
+    [SerializeField, Min(1)] private int levelOneSlimeCapacity = 4;
+    [SerializeField, Min(1)] private int levelTwoSlimeCapacity = 6;
+    [SerializeField, Min(1)] private long levelTwoUpgradeCost = 650;
     [SerializeField] private GameObject ruinedVisual;
     [SerializeField] private GameObject restoredVisual;
     [SerializeField] private TMP_Text interactionPromptText;
@@ -30,6 +32,7 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
 
     private HabitatState habitatState = HabitatState.Ruined;
     private readonly List<SlimeRarity> slimes = new List<SlimeRarity>();
+    private int habitatLevel = 1;
 
     public bool IsRestored =>
         habitatState != HabitatState.Ruined;
@@ -38,9 +41,21 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
         slimes.Count > 0;
 
     public int SlimeCount => slimes.Count;
-    public int MaxSlimeCapacity => maxSlimeCapacity;
+    public int HabitatLevel => habitatLevel;
+
+    public int MaxSlimeCapacity =>
+        habitatLevel == 1
+            ? levelOneSlimeCapacity
+            : levelTwoSlimeCapacity;
+
+    public int ProductionMultiplier =>
+        habitatLevel == 1 ? 1 : 2;
     public bool HasAvailableSlimeSlot =>
         IsRestored && SlimeCount < MaxSlimeCapacity;
+    public bool CanUpgrade =>
+    IsRestored &&
+    habitatLevel == 1 &&
+    SlimeCount >= levelOneSlimeCapacity;
 
     public long NextSlimeCost => CalculateSlimeCost(SlimeCount);
 
@@ -48,10 +63,19 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
 
     public event Action Restored;
     public event Action<SlimeRarity> SlimePurchased;
+    public event Action<int> HabitatUpgraded;
 
     private void Awake()
     {
-        maxSlimeCapacity = Mathf.Max(1, maxSlimeCapacity);
+        levelOneSlimeCapacity = Mathf.Max(1, levelOneSlimeCapacity);
+
+        levelTwoSlimeCapacity = Mathf.Max(
+            levelOneSlimeCapacity + 1,
+            levelTwoSlimeCapacity
+        );
+
+        levelTwoUpgradeCost = Math.Max(1L, levelTwoUpgradeCost);
+        habitatLevel = 1;
         firstSlimeCost = Math.Max(1L, firstSlimeCost);
         slimes.Clear();
 
@@ -85,7 +109,15 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
                 break;
 
             case HabitatState.Occupied:
-                TryBuySlime();
+                if (CanUpgrade)
+                {
+                    TryUpgradeHabitat();
+                }
+                else
+                {
+                    TryBuySlime();
+                }
+
                 break;
         }
     }
@@ -140,6 +172,8 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
             return false;
         }
 
+
+
         SlimeRarity purchasedSlimeRarity = RollSlimeRarity();
         slimes.Add(purchasedSlimeRarity);
         habitatState = HabitatState.Occupied;
@@ -151,6 +185,39 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
             $"Slime obtido: {GetRarityLabel(purchasedSlimeRarity)}! " +
             $"Custo: {slimeCost}. " +
             $"Capacidade: {SlimeCount}/{MaxSlimeCapacity}.",
+            this
+        );
+
+        return true;
+    }
+
+    private bool TryUpgradeHabitat()
+    {
+        if (manaSystem == null || !CanUpgrade)
+        {
+            return false;
+        }
+
+        if (!manaSystem.TrySpendMana(levelTwoUpgradeCost))
+        {
+            Debug.Log(
+                $"São necessárias {levelTwoUpgradeCost} manas " +
+                "para melhorar o habitat.",
+                this
+            );
+
+            return false;
+        }
+
+        habitatLevel = 2;
+
+        UpdatePresentation();
+        HabitatUpgraded?.Invoke(habitatLevel);
+
+        Debug.Log(
+            $"Habitat melhorado para o nível {habitatLevel}! " +
+            $"Capacidade: {MaxSlimeCapacity}. " +
+            $"Produção: x{ProductionMultiplier}.",
             this
         );
 
@@ -251,16 +318,25 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
 
             case HabitatState.RestoredEmpty:
             case HabitatState.Occupied:
-                if (HasAvailableSlimeSlot)
+                if (CanUpgrade)
                 {
                     interactionPromptText.text =
-                        $"COMPRAR SLIME\n{NextSlimeCost:N0} MANA\n" +
+                        $"MELHORAR HABITAT\n" +
+                        $"{levelTwoUpgradeCost:N0} MANA\n" +
+                        $"NÍVEL 1 → 2";
+                }
+                else if (HasAvailableSlimeSlot)
+                {
+                    interactionPromptText.text =
+                        $"COMPRAR SLIME\n" +
+                        $"{NextSlimeCost:N0} MANA\n" +
                         $"SLIMES {SlimeCount}/{MaxSlimeCapacity}";
                 }
                 else
                 {
                     interactionPromptText.text =
-                        $"HABITAT LOTADO\nSLIMES {SlimeCount}/{MaxSlimeCapacity}";
+                        $"HABITAT NÍVEL {HabitatLevel}\n" +
+                        $"SLIMES {SlimeCount}/{MaxSlimeCapacity}";
                 }
 
                 break;
@@ -269,7 +345,14 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
 
     private void OnValidate()
     {
-        maxSlimeCapacity = Mathf.Max(1, maxSlimeCapacity);
+        levelOneSlimeCapacity = Mathf.Max(1, levelOneSlimeCapacity);
+
+        levelTwoSlimeCapacity = Mathf.Max(
+            levelOneSlimeCapacity + 1,
+            levelTwoSlimeCapacity
+        );
+
+        levelTwoUpgradeCost = Math.Max(1L, levelTwoUpgradeCost);
         firstSlimeCost = Math.Max(1L, firstSlimeCost);
     }
 
