@@ -39,6 +39,7 @@ public sealed class SlimeManaProducer : MonoBehaviour
     private void OnEnable()
     {
         grassHabitat.SlimePurchased += HandleSlimePurchased;
+        grassHabitat.HabitatUpgraded += HandleHabitatUpgraded;
 
         if (grassHabitat.HasSlime)
         {
@@ -51,6 +52,7 @@ public sealed class SlimeManaProducer : MonoBehaviour
         if (grassHabitat != null)
         {
             grassHabitat.SlimePurchased -= HandleSlimePurchased;
+            grassHabitat.HabitatUpgraded -= HandleHabitatUpgraded;
         }
 
         StopProduction();
@@ -62,6 +64,10 @@ public sealed class SlimeManaProducer : MonoBehaviour
         NotifyProductionChanged();
     }
 
+    private void HandleHabitatUpgraded(int newLevel)
+    {
+        NotifyProductionChanged();
+    }
     private void NotifyProductionChanged()
     {
         ProductionChanged?.Invoke(TotalManaPerSecond);
@@ -112,7 +118,7 @@ public sealed class SlimeManaProducer : MonoBehaviour
             totalMana += GetManaPerSecond(rarity);
         }
 
-        return totalMana;
+        return totalMana * grassHabitat.ProductionMultiplier;
     }
 
     private long GetManaPerSecond(SlimeRarity rarity)
