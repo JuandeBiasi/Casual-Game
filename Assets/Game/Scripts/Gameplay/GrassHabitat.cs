@@ -64,6 +64,7 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
     public event Action Restored;
     public event Action<SlimeRarity> SlimePurchased;
     public event Action<int> HabitatUpgraded;
+    public event Action ProgressLoaded;
 
     private void Awake()
     {
@@ -222,6 +223,48 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
         );
 
         return true;
+    }
+
+    public void LoadProgress(
+    bool isRestored,
+    int savedLevel,
+    IReadOnlyList<SlimeRarity> savedSlimes
+)
+    {
+        slimes.Clear();
+
+        habitatLevel = Mathf.Clamp(savedLevel, 1, 2);
+
+        if (!isRestored)
+        {
+            habitatLevel = 1;
+            habitatState = HabitatState.Ruined;
+        }
+        else
+        {
+            int savedSlimeCount = savedSlimes == null
+                ? 0
+                : Mathf.Min(savedSlimes.Count, MaxSlimeCapacity);
+
+            for (int i = 0; i < savedSlimeCount; i++)
+            {
+                SlimeRarity rarity = savedSlimes[i];
+
+                if (rarity == SlimeRarity.Common ||
+                    rarity == SlimeRarity.Rare ||
+                    rarity == SlimeRarity.Legendary)
+                {
+                    slimes.Add(rarity);
+                }
+            }
+
+            habitatState = slimes.Count > 0
+                ? HabitatState.Occupied
+                : HabitatState.RestoredEmpty;
+        }
+
+        UpdatePresentation();
+        ProgressLoaded?.Invoke();
     }
 
     private long CalculateSlimeCost(int ownedSlimeCount)

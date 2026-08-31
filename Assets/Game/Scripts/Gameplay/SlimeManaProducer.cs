@@ -36,10 +36,25 @@ public sealed class SlimeManaProducer : MonoBehaviour
         }
     }
 
+    private void HandleProgressLoaded()
+    {
+        if (grassHabitat.HasSlime)
+        {
+            StartProduction();
+        }
+        else
+        {
+            StopProduction();
+        }
+
+        NotifyProductionChanged();
+    }
+
     private void OnEnable()
     {
         grassHabitat.SlimePurchased += HandleSlimePurchased;
         grassHabitat.HabitatUpgraded += HandleHabitatUpgraded;
+        grassHabitat.ProgressLoaded += HandleProgressLoaded;
 
         if (grassHabitat.HasSlime)
         {
@@ -53,6 +68,7 @@ public sealed class SlimeManaProducer : MonoBehaviour
         {
             grassHabitat.SlimePurchased -= HandleSlimePurchased;
             grassHabitat.HabitatUpgraded -= HandleHabitatUpgraded;
+            grassHabitat.ProgressLoaded -= HandleProgressLoaded;
         }
 
         StopProduction();

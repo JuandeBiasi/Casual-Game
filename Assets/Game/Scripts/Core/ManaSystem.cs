@@ -46,6 +46,11 @@ public sealed class ManaSystem : MonoBehaviour
         return true;
     }
 
+    public void SetMana(long amount)
+    {
+        currentMana = Math.Max(0L, amount);
+        NotifyManaChanged();
+    }
     private void NotifyManaChanged()
     {
         ManaChanged?.Invoke(currentMana);

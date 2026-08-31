@@ -1,16 +1,12 @@
-using UnityEngine;
+using System;
+using System.Collections.Generic;
 
-public class NewMonoBehaviourScript : MonoBehaviour
+[Serializable]
+public sealed class GameSaveData
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public long mana;
+    public bool grassHabitatRestored;
+    public int grassHabitatLevel;
+    public List<SlimeRarity> grassSlimes;
+    public long lastSaveUnixTime;
 }
