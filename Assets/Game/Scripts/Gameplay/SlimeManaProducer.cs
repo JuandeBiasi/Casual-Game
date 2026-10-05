@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(GrassHabitat))]
+[RequireComponent(typeof(SlimeHabitat))]
 public sealed class SlimeManaProducer : MonoBehaviour
 {
     [Header("Referências")]
@@ -13,7 +13,7 @@ public sealed class SlimeManaProducer : MonoBehaviour
     [SerializeField, Min(1)] private long rareManaPerSecond = 5;
     [SerializeField, Min(1)] private long legendaryManaPerSecond = 10;
 
-    private GrassHabitat grassHabitat;
+    private SlimeHabitat grassHabitat;
     private Coroutine productionCoroutine;
     private WaitForSeconds waitForProduction;
 
@@ -24,7 +24,7 @@ public sealed class SlimeManaProducer : MonoBehaviour
 
     private void Awake()
     {
-        grassHabitat = GetComponent<GrassHabitat>();
+        grassHabitat = GetComponent<SlimeHabitat>();
         waitForProduction = new WaitForSeconds(1f);
 
         if (manaSystem == null)

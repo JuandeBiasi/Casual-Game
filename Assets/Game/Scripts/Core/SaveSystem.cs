@@ -6,10 +6,20 @@ using UnityEngine;
 
 public sealed class SaveSystem : MonoBehaviour
 {
-    [Header("Referências")]
+    [Header("Mana")]
     [SerializeField] private ManaSystem manaSystem;
-    [SerializeField] private GrassHabitat grassHabitat;
+
+    [Header("Habitat de grama")]
+    [SerializeField] private SlimeHabitat grassHabitat;
     [SerializeField] private SlimeManaProducer slimeManaProducer;
+
+    [Header("Habitat de fogo")]
+    [SerializeField] private SlimeHabitat fireHabitat;
+    [SerializeField] private SlimeManaProducer fireManaProducer;
+
+    [Header("Habitat de água")]
+    [SerializeField] private SlimeHabitat waterHabitat;
+    [SerializeField] private SlimeManaProducer waterManaProducer;
 
     [Header("Salvamento automático")]
     [SerializeField, Min(1f)] private float autosaveInterval = 5f;
@@ -58,6 +68,18 @@ public sealed class SaveSystem : MonoBehaviour
                 grassHabitat.Slimes
             ),
 
+            fireHabitatRestored = fireHabitat.IsRestored,
+            fireHabitatLevel = fireHabitat.HabitatLevel,
+            fireSlimes = new List<SlimeRarity>(
+                fireHabitat.Slimes
+            ),
+
+            waterHabitatRestored = waterHabitat.IsRestored,
+            waterHabitatLevel = waterHabitat.HabitatLevel,
+            waterSlimes = new List<SlimeRarity>(
+                waterHabitat.Slimes
+            ),
+
             lastSaveUnixTime = GetCurrentUnixTime()
         };
 
@@ -96,21 +118,29 @@ public sealed class SaveSystem : MonoBehaviour
                 return;
             }
 
-            int loadedLevel = saveData.grassHabitatLevel < 1
-                ? 1
-                : saveData.grassHabitatLevel;
-
             // Primeiro restaura a mana salva.
             manaSystem.SetMana(saveData.mana);
 
-            // Depois restaura slimes, nível e multiplicador.
+            // Depois restaura slimes, nível e multiplicador de cada habitat.
             grassHabitat.LoadProgress(
                 saveData.grassHabitatRestored,
-                loadedLevel,
+                Mathf.Max(1, saveData.grassHabitatLevel),
                 saveData.grassSlimes
             );
 
-            // Agora a produção por segundo já pode ser calculada.
+            fireHabitat.LoadProgress(
+                saveData.fireHabitatRestored,
+                Mathf.Max(1, saveData.fireHabitatLevel),
+                saveData.fireSlimes
+            );
+
+            waterHabitat.LoadProgress(
+                saveData.waterHabitatRestored,
+                Mathf.Max(1, saveData.waterHabitatLevel),
+                saveData.waterSlimes
+            );
+
+            // Calcula o ganho depois de carregar os três habitats.
             ApplyOfflineEarnings(saveData.lastSaveUnixTime);
 
             Debug.Log("Progresso carregado com sucesso.");
@@ -147,7 +177,9 @@ public sealed class SaveSystem : MonoBehaviour
         );
 
         long manaPerSecond =
-            slimeManaProducer.TotalManaPerSecond;
+            slimeManaProducer.TotalManaPerSecond +
+            fireManaProducer.TotalManaPerSecond +
+            waterManaProducer.TotalManaPerSecond;
 
         long offlineMana =
             consideredSeconds * manaPerSecond;
@@ -215,7 +247,11 @@ public sealed class SaveSystem : MonoBehaviour
     {
         if (manaSystem == null ||
             grassHabitat == null ||
-            slimeManaProducer == null)
+            slimeManaProducer == null ||
+            fireHabitat == null ||
+            fireManaProducer == null ||
+            waterHabitat == null ||
+            waterManaProducer == null)
         {
             Debug.LogError(
                 "As referências do SaveSystem não foram configuradas.",

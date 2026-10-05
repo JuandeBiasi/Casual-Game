@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(BoxCollider))]
-public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
+public sealed class SlimeHabitat : MonoBehaviour
 {
     private enum HabitatState
     {
@@ -42,6 +41,9 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
 
     public int SlimeCount => slimes.Count;
     public int HabitatLevel => habitatLevel;
+    public long RestorationCost => restorationCost;
+    public long UpgradeCost => levelTwoUpgradeCost;
+    public int LevelOneSlimeCapacity => levelOneSlimeCapacity;
 
     public int MaxSlimeCapacity =>
         habitatLevel == 1
@@ -92,40 +94,9 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
         UpdatePresentation();
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    public bool TryRestore()
     {
-        if (eventData.button != PointerEventData.InputButton.Left)
-        {
-            return;
-        }
-
-        switch (habitatState)
-        {
-            case HabitatState.Ruined:
-                TryRestore();
-                break;
-
-            case HabitatState.RestoredEmpty:
-                TryBuySlime();
-                break;
-
-            case HabitatState.Occupied:
-                if (CanUpgrade)
-                {
-                    TryUpgradeHabitat();
-                }
-                else
-                {
-                    TryBuySlime();
-                }
-
-                break;
-        }
-    }
-
-    private bool TryRestore()
-    {
-        if (manaSystem == null)
+        if (manaSystem == null || IsRestored)
         {
             return false;
         }
@@ -148,7 +119,7 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
         return true;
     }
 
-    private bool TryBuySlime()
+    public bool TryBuySlime()
     {
         if (manaSystem == null)
         {
@@ -192,7 +163,7 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
         return true;
     }
 
-    private bool TryUpgradeHabitat()
+    public bool TryUpgradeHabitat()
     {
         if (manaSystem == null || !CanUpgrade)
         {
@@ -347,42 +318,9 @@ public sealed class GrassHabitat : MonoBehaviour, IPointerClickHandler
     }
     private void UpdatePrompt()
     {
-        if (interactionPromptText == null)
+        if (interactionPromptText != null)
         {
-            return;
-        }
-
-        switch (habitatState)
-        {
-            case HabitatState.Ruined:
-                interactionPromptText.text =
-                    $"RESTAURAR\n{restorationCost:N0} MANA";
-                break;
-
-            case HabitatState.RestoredEmpty:
-            case HabitatState.Occupied:
-                if (CanUpgrade)
-                {
-                    interactionPromptText.text =
-                        $"MELHORAR HABITAT\n" +
-                        $"{levelTwoUpgradeCost:N0} MANA\n" +
-                        $"NÍVEL 1 → 2";
-                }
-                else if (HasAvailableSlimeSlot)
-                {
-                    interactionPromptText.text =
-                        $"COMPRAR SLIME\n" +
-                        $"{NextSlimeCost:N0} MANA\n" +
-                        $"SLIMES {SlimeCount}/{MaxSlimeCapacity}";
-                }
-                else
-                {
-                    interactionPromptText.text =
-                        $"HABITAT NÍVEL {HabitatLevel}\n" +
-                        $"SLIMES {SlimeCount}/{MaxSlimeCapacity}";
-                }
-
-                break;
+            interactionPromptText.gameObject.SetActive(false);
         }
     }
 
