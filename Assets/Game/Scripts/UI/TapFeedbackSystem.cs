@@ -1,6 +1,9 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public sealed class TapFeedbackSystem : MonoBehaviour
 {
@@ -10,6 +13,10 @@ public sealed class TapFeedbackSystem : MonoBehaviour
 
     [SerializeField, Range(0f, 1f)]
     private float tapVolume = 0.35f;
+
+    [Header("Som do menu Vila")]
+    [SerializeField] private Button villageMenuButton;
+    [SerializeField] private AudioClip villageMenuClip;
 
     [Header("Círculo do toque")]
     [SerializeField] private Canvas targetCanvas;
@@ -29,6 +36,8 @@ public sealed class TapFeedbackSystem : MonoBehaviour
     private float endScale = 1.35f;
 
     private Coroutine rippleRoutine;
+    private readonly List<RaycastResult> tapRaycastResults =
+        new List<RaycastResult>();
 
     private void Awake()
     {
@@ -87,10 +96,12 @@ public sealed class TapFeedbackSystem : MonoBehaviour
 
     private void PlayFeedback(Vector2 screenPosition)
     {
-        if (audioSource != null && tapClip != null)
+        AudioClip feedbackClip = GetFeedbackClip(screenPosition);
+
+        if (audioSource != null && feedbackClip != null)
         {
             audioSource.PlayOneShot(
-                tapClip,
+                feedbackClip,
                 tapVolume
             );
         }
@@ -111,6 +122,40 @@ public sealed class TapFeedbackSystem : MonoBehaviour
 
         rippleRoutine =
             StartCoroutine(AnimateRipple());
+    }
+
+    private AudioClip GetFeedbackClip(Vector2 screenPosition)
+    {
+        EventSystem eventSystem = EventSystem.current;
+
+        if (villageMenuButton == null || villageMenuClip == null ||
+            eventSystem == null || !villageMenuButton.isActiveAndEnabled ||
+            !villageMenuButton.IsInteractable())
+        {
+            return tapClip;
+        }
+
+        PointerEventData pointerData = new PointerEventData(eventSystem)
+        {
+            position = screenPosition
+        };
+
+        eventSystem.RaycastAll(pointerData, tapRaycastResults);
+
+        // Only the top hit receives the touch: an open panel must not
+        // trigger the sound of the Vila button underneath it.
+        if (tapRaycastResults.Count > 0)
+        {
+            Button hitButton = tapRaycastResults[0].gameObject
+                .GetComponentInParent<Button>();
+
+            if (hitButton == villageMenuButton)
+            {
+                return villageMenuClip;
+            }
+        }
+
+        return tapClip;
     }
 
     private void PositionRipple(Vector2 screenPosition)

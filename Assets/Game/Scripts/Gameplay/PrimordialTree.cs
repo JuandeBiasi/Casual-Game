@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,6 +8,8 @@ public sealed class PrimordialTree : MonoBehaviour, IPointerClickHandler
     [Header("Configuração")]
     [SerializeField] private ManaSystem manaSystem;
     [SerializeField, Min(1)] private int manaPerTap = 1;
+
+    public event Action<int> ManaTapped;
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -25,6 +28,13 @@ public sealed class PrimordialTree : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        manaSystem.AddMana(manaPerTap);
+        int gainedMana = manaPerTap;
+        if (gainedMana <= 0)
+        {
+            return;
+        }
+
+        manaSystem.AddMana(gainedMana);
+        ManaTapped?.Invoke(gainedMana);
     }
 }
