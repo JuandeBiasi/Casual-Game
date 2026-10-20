@@ -14,9 +14,9 @@ public sealed class TapFeedbackSystem : MonoBehaviour
     [SerializeField, Range(0f, 1f)]
     private float tapVolume = 0.35f;
 
-    [Header("Som do menu Vila")]
-    [SerializeField] private Button villageMenuButton;
-    [SerializeField] private AudioClip villageMenuClip;
+    [Header("Som de menus")]
+    [SerializeField] private AudioClip menuClip;
+    [SerializeField] private Button optionsMenuButton;
 
     [Header("Círculo do toque")]
     [SerializeField] private Canvas targetCanvas;
@@ -128,9 +128,7 @@ public sealed class TapFeedbackSystem : MonoBehaviour
     {
         EventSystem eventSystem = EventSystem.current;
 
-        if (villageMenuButton == null || villageMenuClip == null ||
-            eventSystem == null || !villageMenuButton.isActiveAndEnabled ||
-            !villageMenuButton.IsInteractable())
+        if (menuClip == null || eventSystem == null)
         {
             return tapClip;
         }
@@ -142,17 +140,19 @@ public sealed class TapFeedbackSystem : MonoBehaviour
 
         eventSystem.RaycastAll(pointerData, tapRaycastResults);
 
-        // Only the top hit receives the touch: an open panel must not
-        // trigger the sound of the Vila button underneath it.
+        // Only the top hit can open a menu; overlays block habitats underneath.
         if (tapRaycastResults.Count > 0)
         {
-            Button hitButton = tapRaycastResults[0].gameObject
-                .GetComponentInParent<Button>();
+            GameObject hit = tapRaycastResults[0].gameObject;
+            Button hitButton = hit.GetComponentInParent<Button>();
 
-            if (hitButton == villageMenuButton)
+            if (hitButton != null && hitButton.isActiveAndEnabled && hitButton.IsInteractable() &&
+                hitButton == optionsMenuButton)
             {
-                return villageMenuClip;
+                return menuClip;
             }
+            HabitatPopupTrigger habitatTrigger = hit.GetComponentInParent<HabitatPopupTrigger>();
+            if (habitatTrigger != null && habitatTrigger.isActiveAndEnabled) return menuClip;
         }
 
         return tapClip;
