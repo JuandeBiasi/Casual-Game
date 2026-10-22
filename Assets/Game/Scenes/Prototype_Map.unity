@@ -12108,6 +12108,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 03ee9416c9a20364aa7de20266453633, type: 3}
   m_PrefabInstance: {fileID: 748876108}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1082213448
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 28.311573
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 11.8569
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -12.967035
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
+      propertyPath: m_Name
+      value: Habitat_Remake_fogo_restaurado_
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f50476cc7f4d45849921b7241dc171d0, type: 3}
 --- !u!1001 &1085425761
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -31162,7 +31219,6 @@ MonoBehaviour:
   habitatName: Habitat de grama
   accentColor: {r: 0.3, g: 0.72, b: 0.37, a: 1}
   scaleFeedback: {fileID: 14000000002}
-
 --- !u!114 &12000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31179,7 +31235,6 @@ MonoBehaviour:
   habitatName: Habitat de fogo
   accentColor: {r: 1, g: 0.49, b: 0.22, a: 1}
   scaleFeedback: {fileID: 14000000012}
-
 --- !u!114 &12000000002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31196,7 +31251,6 @@ MonoBehaviour:
   habitatName: "Habitat de \xE1gua"
   accentColor: {r: 0.3, g: 0.7, b: 1, a: 1}
   scaleFeedback: {fileID: 14000000022}
-
 --- !u!1 &13000000000
 GameObject:
   m_ObjectHideFlags: 0
@@ -33185,12 +33239,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb81f5d923c84441a42f44ef5d0aa0c5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClickScaleFeedback
   visualRoot: {fileID: 14000000001}
   scaleAmount: 0.06
   scaleDuration: 0.2
-
 --- !u!1 &14000000010
 GameObject:
   m_ObjectHideFlags: 0
@@ -33235,12 +33288,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb81f5d923c84441a42f44ef5d0aa0c5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClickScaleFeedback
   visualRoot: {fileID: 14000000011}
   scaleAmount: 0.06
   scaleDuration: 0.2
-
 --- !u!1 &14000000020
 GameObject:
   m_ObjectHideFlags: 0
@@ -33285,12 +33337,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb81f5d923c84441a42f44ef5d0aa0c5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClickScaleFeedback
   visualRoot: {fileID: 14000000021}
   scaleAmount: 0.06
   scaleDuration: 0.2
-
 --- !u!114 &15000000000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33301,7 +33352,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f22f4c467144b90bfb555b25d8ef977, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HabitatStateAura
   auraMaterial: {fileID: 2100000, guid: 14de5c16392d4cb4bfe2f40917a65078, type: 2}
   auraColor: {r: 0.4, g: 1, b: 0.65, a: 1}
@@ -33309,7 +33360,6 @@ MonoBehaviour:
   expansionRadius: 2.2
   restorationParticles: 18
   upgradeParticles: 30
-
 --- !u!114 &15000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33320,7 +33370,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f22f4c467144b90bfb555b25d8ef977, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HabitatStateAura
   auraMaterial: {fileID: 2100000, guid: 14de5c16392d4cb4bfe2f40917a65078, type: 2}
   auraColor: {r: 1, g: 0.4, b: 0.1, a: 1}
@@ -33328,7 +33378,6 @@ MonoBehaviour:
   expansionRadius: 2.2
   restorationParticles: 18
   upgradeParticles: 30
-
 --- !u!114 &15000000002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33339,7 +33388,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f22f4c467144b90bfb555b25d8ef977, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HabitatStateAura
   auraMaterial: {fileID: 2100000, guid: 14de5c16392d4cb4bfe2f40917a65078, type: 2}
   auraColor: {r: 0.25, g: 0.75, b: 1, a: 1}
@@ -33347,7 +33396,6 @@ MonoBehaviour:
   expansionRadius: 2.2
   restorationParticles: 18
   upgradeParticles: 30
-
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -33362,3 +33410,4 @@ SceneRoots:
   - {fileID: 273292411}
   - {fileID: 19634613}
   - {fileID: 1312482962}
+  - {fileID: 1082213448}
