@@ -46,6 +46,12 @@ public sealed class SlimeVisualSlot : MonoBehaviour
         if (IdleAnimation != null) IdleAnimation.Play(visual != null ? visual.transform : null);
     }
 
+    public bool PlayPurchaseFeedback(out Vector3 worldOrigin)
+    {
+        worldOrigin = default;
+        return IdleAnimation != null && IdleAnimation.PlaySpawn(out worldOrigin);
+    }
+
     public void Hide()
     {
         if (IdleAnimation != null) IdleAnimation.Stop();

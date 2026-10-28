@@ -38,6 +38,13 @@ public sealed class HabitatPopupUI : MonoBehaviour
     private bool initialized;
     private bool subscribed;
 
+    public bool IsOpen => initialized && panelRoot != null && panelRoot.activeInHierarchy;
+    public SlimeHabitat SelectedHabitat => selectedHabitat;
+    public RectTransform WindowRect => window;
+    public RectTransform RestoreButtonRect => habitatActionButton != null ? habitatActionButton.transform as RectTransform : null;
+    public RectTransform BuyButtonRect => buySlimeButton != null ? buySlimeButton.transform as RectTransform : null;
+    public RectTransform CloseButtonRect => closeButton != null ? closeButton.transform as RectTransform : null;
+
     private void Awake()
     {
         if (manaSystem == null || panelRoot == null || closeButton == null ||
