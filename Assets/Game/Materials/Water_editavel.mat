@@ -110,7 +110,7 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _FoamAmont: 0.4
+    - _FoamAmont: 0.3
     - _FoamCatoff: 1
     - _FoamScale: 30
     - _FoamSpeed: 0.03
@@ -131,7 +131,7 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
-    - _WaveScale: 3
+    - _WaveScale: 0.1
     - _WaveSpeed: 0.1
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
