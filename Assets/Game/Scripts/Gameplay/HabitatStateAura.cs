@@ -197,7 +197,7 @@ public sealed class HabitatStateAura : MonoBehaviour
         sparks.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 
-    private static void ConfigureRenderer(Renderer renderer)
+    internal static void ConfigureRenderer(Renderer renderer)
     {
         renderer.shadowCastingMode = ShadowCastingMode.Off;
         renderer.receiveShadows = false;
@@ -205,7 +205,7 @@ public sealed class HabitatStateAura : MonoBehaviour
         renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
     }
 
-    private static Mesh CreateRingMesh()
+    internal static Mesh CreateRingMesh(bool keepReadable = false)
     {
         const int segments = 48;
         float[] radii = { 0.72f, 0.83f, 0.93f, 1f };
@@ -235,11 +235,11 @@ public sealed class HabitatStateAura : MonoBehaviour
         Mesh mesh = new Mesh { name = "Habitat Aura Ring (runtime)", hideFlags = HideFlags.DontSave };
         mesh.vertices = vertices; mesh.normals = normals; mesh.colors = colors; mesh.uv = uv; mesh.triangles = triangles;
         mesh.RecalculateBounds();
-        mesh.UploadMeshData(true);
+        mesh.UploadMeshData(!keepReadable);
         return mesh;
     }
 
-    private static Texture2D CreateSparkTexture()
+    internal static Texture2D CreateSparkTexture()
     {
         const int size = 32;
         Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
